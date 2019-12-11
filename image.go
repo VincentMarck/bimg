@@ -185,9 +185,7 @@ func (i *Image) TrimValues(o Options) (int, int, int, int, error) {
 	if err != nil {
 		return 0, 0, 0, 0, err
 	}
-	left, top, width, height, err := vipsTrim(image, o.Background, o.Threshold)
-
-	return i.Process(options)
+	return vipsTrim(image, o.Background, o.Threshold)
 }
 
 // Trim removes the background from the picture. It can result in a 0x0 output

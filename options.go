@@ -209,7 +209,6 @@ type Options struct {
 	Interlace      bool
 	StripMetadata  bool
 	Trim           bool
-	TrimValues     bool
 	TrimLeft       int
 	TrimTop        int
 	TrimWidth      int

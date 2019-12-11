@@ -178,6 +178,18 @@ func (i *Image) Colourspace(c Interpretation) ([]byte, error) {
 	return i.Process(options)
 }
 
+// TrimValues returns the values to use for trimming.
+// This is in a separate call because bimg freaks out otherwise.
+func (i *Image) TrimValues(o Options) (int, int, int, int, error) {
+	image, _, err := loadImage(i.buffer)
+	if err != nil {
+		return 0, 0, 0, 0, err
+	}
+	left, top, width, height, err := vipsTrim(image, o.Background, o.Threshold)
+
+	return i.Process(options)
+}
+
 // Trim removes the background from the picture. It can result in a 0x0 output
 // if the image is all background.
 func (i *Image) Trim() ([]byte, error) {

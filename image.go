@@ -200,6 +200,9 @@ func (i *Image) RotateAndGetTrimValues(o Options) ([]byte, int, int, int, int, e
 		}
 	} else {
 		bt, err = saveImage(image, o)
+		if err != nil {
+			return nil, 0, 0, 0, 0, err
+		}
 	}
 
 	top, left, width, height, err := vipsTrim(image, o.Background, o.Threshold)

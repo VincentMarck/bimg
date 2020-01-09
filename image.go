@@ -5,13 +5,6 @@ type Image struct {
 	buffer []byte
 }
 
-type TrimValues struct {
-	Top    int
-	Left   int
-	Width  int
-	Height int
-}
-
 // NewImage creates a new Image struct with method DSL.
 func NewImage(buf []byte) *Image {
 	return &Image{buf}
@@ -185,41 +178,14 @@ func (i *Image) Colourspace(c Interpretation) ([]byte, error) {
 	return i.Process(options)
 }
 
-// RotateAndGetTrimValues returns the image autorotated and the values to use for trimming.
+// TrimValues returns the values to use for trimming.
 // This is in a separate call because bimg freaks out otherwise.
-func (i *Image) RotateAndGetTrimValues(o Options) ([]byte, TrimValues, error) {
-	image, imageType, err := loadImage(i.buffer)
+func (i *Image) TrimValues(o Options) (int, int, int, int, error) {
+	image, _, err := loadImage(i.buffer)
 	if err != nil {
-		return nil, TrimValues{}, err
+		return 0, 0, 0, 0, err
 	}
-
-	// Auto rotate image based on EXIF orientation header
-	image, rotated, err := rotateAndFlipImage(image, o)
-	if err != nil {
-		return nil, TrimValues{}, err
-	}
-
-	var bt []byte
-	if rotated && imageType == JPEG && !o.NoAutoRotate {
-		bt, err = getImageBuffer(image)
-		if err != nil {
-			return nil, TrimValues{}, err
-		}
-	} else {
-		bt, err = saveImage(image, o)
-		if err != nil {
-			return nil, TrimValues{}, err
-		}
-	}
-
-	top, left, width, height, err := vipsTrim(image, o.Background, o.Threshold)
-
-	return bt, TrimValues{
-		Top:    top,
-		Left:   left,
-		Width:  width,
-		Height: height,
-	}, err
+	return vipsTrim(image, o.Background, o.Threshold)
 }
 
 // Trim removes the background from the picture. It can result in a 0x0 output

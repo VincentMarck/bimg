@@ -178,14 +178,33 @@ func (i *Image) Colourspace(c Interpretation) ([]byte, error) {
 	return i.Process(options)
 }
 
-// TrimValues returns the values to use for trimming.
+// RotateAndGetTrimValues returns the image autorotated and the values to use for trimming.
 // This is in a separate call because bimg freaks out otherwise.
-func (i *Image) TrimValues(o Options) (int, int, int, int, error) {
-	image, _, err := loadImage(i.buffer)
+func (i *Image) RotateAndGetTrimValues(o Options) ([]byte, int, int, int, int, error) {
+	image, imageType, err := loadImage(i.buffer)
 	if err != nil {
-		return 0, 0, 0, 0, err
+		return nil, 0, 0, 0, 0, err
 	}
-	return vipsTrim(image, o.Background, o.Threshold)
+
+	// Auto rotate image based on EXIF orientation header
+	image, rotated, err := rotateAndFlipImage(image, o)
+	if err != nil {
+		return nil, 0, 0, 0, 0, err
+	}
+
+	var bt []byte
+	if rotated && imageType == JPEG && !o.NoAutoRotate {
+		bt, err = getImageBuffer(image)
+		if err != nil {
+			return nil, 0, 0, 0, 0, err
+		}
+	} else {
+		bt, err = saveImage(image, o)
+	}
+
+	top, left, width, height, err := vipsTrim(image, o.Background, o.Threshold)
+
+	return bt, top, left, width, height, err
 }
 
 // Trim removes the background from the picture. It can result in a 0x0 output
